@@ -1,0 +1,3 @@
+title=Pythonic CS1
+author=Ric Yik
+orientation=portrait
