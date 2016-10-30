@@ -148,5 +148,5 @@ def main():
     CourseApp().run()
 
 
-if __name__ == '__main__':
+if __name__ in ('__main__', '__android__'):
     main()
