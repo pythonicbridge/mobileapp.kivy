@@ -1,4 +1,5 @@
 import string
+import re
 import urllib2
 from threading import Thread
 
@@ -69,6 +70,7 @@ class CourseApp(App):
                     state = 'MenuCaption'
 
                 if state == 'Paragraph':
+                    line = self.format_hyperlink(line)
                     paragraph = paragraph + line + '\n'
                 elif state == 'MenuCaption':
                     caption_attribute = ':caption:'
@@ -106,11 +108,12 @@ class CourseApp(App):
 
         def get_menu(arg):
             for page in self.current_page.children:
-                response = urllib2.urlopen(url='https://raw.githubusercontent.com/pythonicbridge/mobileapp.course/master/docs/{}.rst'.format(page.name))
-                text = response.read()
-                for line in text.splitlines():
-                    page.title = line
-                    break
+                if len(page.name) > 0:
+                    response = urllib2.urlopen(url='https://raw.githubusercontent.com/pythonicbridge/mobileapp.course/master/docs/{}.rst'.format(page.name))
+                    text = response.read()
+                    for line in text.splitlines():
+                        page.title = line
+                        break
             def got_menu(dt):
                 update_page()
             Clock.schedule_once(got_menu)
@@ -118,11 +121,20 @@ class CourseApp(App):
         thread = Thread(target=get_menu, args=(None,))
         thread.start()
 
+    def format_hyperlink(self, line):
+        # return line # attempt 1: this will pass 1 test
+        # return re.sub('`(.*) <([^>]*)>`_', r'[ref=\2]\1[/ref]', line) # attempt 2: this will pass 2 tests
+        return re.sub('`([^`]*) <([^>]*)>`_', r'[ref=\2][color=#00009E]\1[/color][/ref]', line) # attempt 3: this will pass all tests
+
     def on_page_label_ref_press(self, instance, value):
-        page = self.references[value]
+        page = self.references.get(value, None)
         if page is not None:
             self.current_page = page
             self.load_page(page_name=self.current_page.name)
+        else:
+            if __name__ != '__android__':
+                import webbrowser
+                webbrowser.open(value);
 
     def on_start(self):
         self.on_home()
