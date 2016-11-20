@@ -56,7 +56,10 @@ BoxLayout:
                     size_hint_y: None
                     Button:
                         text: 'Run Test'
+                        on_press: app.on_programming_quiz_run_test(self)
                     Button:
                         text: 'Reset'
+                        on_press: app.on_programming_quiz_reset(self)
                     Button:
                         text: 'Move On'
+                        on_press: app.on_programming_quiz_move_on(self)
