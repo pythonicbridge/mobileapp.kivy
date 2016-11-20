@@ -51,9 +51,13 @@ BoxLayout:
                 orientation: 'vertical'
                 CodeInput:
                     id: code_input
+                    size_hint_y: 0.50
+                CodeInput:
+                    id: code_output
+                    size_hint_y: 0.45
                 BoxLayout:
                     orientation: 'horizontal'
-                    size_hint_y: None
+                    size_hint_y: 0.05
                     Button:
                         text: 'Run Test'
                         on_press: app.on_programming_quiz_run_test(self)

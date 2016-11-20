@@ -172,7 +172,21 @@ class CourseApp(App):
             self.root.ids.screen_manager.current = 'programming_quiz'
 
     def on_programming_quiz_run_test(self, arg):
-        pass
+        import code
+        run="""
+runner = unittest2.TextTestRunner(stream=context['mystream'])
+suite = unittest2.TestSuite()
+suite.addTest(unittest2.makeSuite(ProgrammingQuiz))
+context['test'] = runner.run(suite)
+        """
+        co = code.compile_command(self.root.ids.code_input.text + '\n{}'.format(run), "<stdin>", "exec")
+        if co:
+            from cStringIO import StringIO
+            mystream = StringIO()
+            context = dict()
+            context['mystream'] = mystream
+            exec(co, dict(globals(), context=context))
+            self.root.ids.code_output.text = str(context['test']) + '\n' + context['mystream'].getvalue()
 
     def on_programming_quiz_reset(self, arg):
         self.root.ids.code_input.text = self.programming_quiz_original_code
