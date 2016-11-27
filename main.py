@@ -1,3 +1,6 @@
+import base64
+import httplib
+import json
 import string
 import re
 import urllib2
@@ -10,6 +13,21 @@ from kivy.network.urlrequest import UrlRequest
 from kivy.uix.label import Label
 from kivy.utils import get_color_from_hex
 
+
+class GistController:
+
+    def save(self, token, gist, gist_id=None):
+        connection = httplib.HTTPSConnection('api.github.com')
+        headers = {
+            "User-Agent": "Mozilla/5.0",
+            "Authorization": "token " + token
+        }
+        if gist_id:
+            connection.request('PATCH', '/gists/' + gist_id, json.dumps(gist), headers)
+        else:
+            connection.request('POST', '/gists', json.dumps(gist), headers)
+        response = connection.getresponse()
+        return json.loads(response.read())
 
 class PageNode():
     def __init__(self):
@@ -43,6 +61,7 @@ class CourseApp(App):
         self.current_page = None
         self.references = dict()
         self.programming_quiz_original_code = ''
+        self.programming_quiz_gist_id = None
 
     def load_page(self, page_name):
         self.root.ids.screen_manager.current = 'loading'
@@ -103,6 +122,7 @@ class CourseApp(App):
                     if string.find(line, '# END OF PROGRAMMING QUIZ') == trim_pos:
                         if state2 == 'ProgrammingQuiz':
                             self.root.ids.code_input.text = self.programming_quiz_original_code = code
+                            self.programming_quiz_gist_id = None
                             paragraph = paragraph + '[ref=programming_quiz][color=#00009E]Launch Programming Quiz[/color][/ref]' + '\n';
                             state = 'Paragraph'
                             state2 = ''
@@ -194,8 +214,24 @@ context['test'] = runner.run(suite)
     def on_programming_quiz_reset(self, arg):
         self.root.ids.code_input.text = self.programming_quiz_original_code
 
-    def on_programming_quiz_move_on(self, arg):
-        self.on_next()
+    def on_programming_quiz_save(self, arg):
+        from main import GistController
+        controller = GistController()
+        token = 'To be externalized'
+        gist = {
+            "description": "Programming Quiz",
+            "public": "true",
+            "files": {
+                "main.py": {"content": self.root.ids.code_input.text},
+                "output.txt": {"content": self.root.ids.code_output.text}
+            }
+        }
+        if self.programming_quiz_gist_id:
+            result = controller.save(token, gist, self.programming_quiz_gist_id)
+        else:
+            result = controller.save(token, gist)
+            self.programming_quiz_gist_id = result['id']
+        pass
 
     def on_start(self):
         self.on_home()
