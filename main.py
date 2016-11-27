@@ -42,6 +42,7 @@ class CourseApp(App):
         self.home_page.name = 'index'
         self.current_page = None
         self.references = dict()
+        self.programming_quiz_original_code = ''
 
     def load_page(self, page_name):
         self.root.ids.screen_manager.current = 'loading'
@@ -56,6 +57,9 @@ class CourseApp(App):
         paragraph = ''
         menu_caption = ''
         state = ''
+        state2 = ''
+        code = ''
+        trim_pos = -2
         line_number = 0
         children_name = list()
         for line in text.splitlines():
@@ -68,6 +72,10 @@ class CourseApp(App):
 
                 if line == '.. toctree::':
                     state = 'MenuCaption'
+                elif line == '.. code:: python':
+                    state = 'Code'
+                    code = ''
+                    continue
 
                 if state == 'Paragraph':
                     line = self.format_hyperlink(line)
@@ -81,6 +89,31 @@ class CourseApp(App):
                 elif state == 'MenuItem':
                     if len(line) > 0:
                         children_name.append(line.strip())
+                elif state == 'Code':
+                    pos = string.find(line, '# PROGRAMMING QUIZ')
+                    if pos > -1:
+                        state2 = 'ProgrammingQuiz'
+                        trim_pos = pos
+
+                    if trim_pos > 0:
+                        code = code + '\n' + line[trim_pos:]
+                    else:
+                        code = code + '\n' + line
+
+                    if string.find(line, '# END OF PROGRAMMING QUIZ') == trim_pos:
+                        if state2 == 'ProgrammingQuiz':
+                            self.root.ids.code_input.text = self.programming_quiz_original_code = code
+                            paragraph = paragraph + '[ref=programming_quiz][color=#00009E]Launch Programming Quiz[/color][/ref]' + '\n';
+                            state = 'Paragraph'
+                            state2 = ''
+                            code = ''
+                    elif state2 != 'ProgrammingQuiz':
+                        m = re.match('[^ ]', line)
+                        if m and m.start() == 0:
+                            paragraph = paragraph + '.. code:: python' + code + '\n'
+                            state = 'Paragraph'
+                            state2 = ''
+                            code = ''
 
         self.current_page.title = title
         self.current_page.children = list()
@@ -131,10 +164,38 @@ class CourseApp(App):
         if page is not None:
             self.current_page = page
             self.load_page(page_name=self.current_page.name)
-        else:
+        elif string.find(value, 'http') == 0:
             if __name__ != '__android__':
                 import webbrowser
                 webbrowser.open(value);
+        elif value == 'programming_quiz':
+            self.root.ids.screen_manager.current = 'programming_quiz'
+
+    def on_programming_quiz_run_test(self, arg):
+        import code
+        run="""
+runner = unittest2.TextTestRunner(stream=context['mystream'])
+suite = unittest2.TestSuite()
+suite.addTest(unittest2.makeSuite(ProgrammingQuiz))
+context['test'] = runner.run(suite)
+        """
+        try:
+            co = code.compile_command(self.root.ids.code_input.text + '\n{}'.format(run), "<stdin>", "exec")
+            if co:
+                from cStringIO import StringIO
+                mystream = StringIO()
+                context = dict()
+                context['mystream'] = mystream
+                exec(co, dict(globals(), context=context))
+                self.root.ids.code_output.text = str(context['test']) + '\n' + context['mystream'].getvalue()
+        except SyntaxError as ex:
+            self.root.ids.code_output.text = str(ex)
+
+    def on_programming_quiz_reset(self, arg):
+        self.root.ids.code_input.text = self.programming_quiz_original_code
+
+    def on_programming_quiz_move_on(self, arg):
+        self.on_next()
 
     def on_start(self):
         self.on_home()

@@ -45,3 +45,25 @@ BoxLayout:
                         id: page_label
                         markup: True
                         on_ref_press: app.on_page_label_ref_press(self, args[1])
+        Screen:
+            name: 'programming_quiz'
+            BoxLayout:
+                orientation: 'vertical'
+                CodeInput:
+                    id: code_input
+                    size_hint_y: 0.50
+                CodeInput:
+                    id: code_output
+                    size_hint_y: 0.45
+                BoxLayout:
+                    orientation: 'horizontal'
+                    size_hint_y: 0.05
+                    Button:
+                        text: 'Run Test'
+                        on_press: app.on_programming_quiz_run_test(self)
+                    Button:
+                        text: 'Reset'
+                        on_press: app.on_programming_quiz_reset(self)
+                    Button:
+                        text: 'Move On'
+                        on_press: app.on_programming_quiz_move_on(self)

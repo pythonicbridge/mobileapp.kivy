@@ -1,7 +1,7 @@
-import unittest
+import unittest2
 
 
-class TestSourceApp(unittest.TestCase):
+class TestSourceApp(unittest2.TestCase):
     def test_format_hyperlink_no_hyperlink(self):
         from main import CourseApp
         app = CourseApp()
@@ -21,4 +21,4 @@ class TestSourceApp(unittest.TestCase):
 
 
 if __name__ == 'main':
-    unittest.main()
+    unittest2.main()
