@@ -217,7 +217,7 @@ context['test'] = runner.run(suite)
     def on_programming_quiz_save(self, arg):
         from main import GistController
         controller = GistController()
-        token = '13b144c43b1d98974ce32a8e492f43ce1b523ca8' # Token for Public Demo Acount. To be externalized
+        token = 'bc754134ec6bbd3d75ecfbc50ce3f96ff69103ad'[::-1] # Token for Public Demo Acount. To be externalized
         gist = {
             "description": "Programming Quiz",
             "public": "true",
