@@ -5,7 +5,7 @@ class TestGistController(unittest2.TestCase):
     def test_save(self):
         from main import GistController
         controller = GistController()
-        token = '70711205b0480aeee51943799bb81fde758b7375'
+        token = '13b144c43b1d98974ce32a8e492f43ce1b523ca8' # Token for Public Demo Acount. To be externalized
         gist = {
             "description":"Created via API",
             "public":"true",
