@@ -55,6 +55,7 @@ BoxLayout:
                 CodeInput:
                     id: code_output
                     size_hint_y: 0.45
+                    on_text: app.on_programming_quiz_code_input_changed(self)
                 BoxLayout:
                     orientation: 'horizontal'
                     size_hint_y: 0.05
@@ -65,5 +66,5 @@ BoxLayout:
                         text: 'Reset'
                         on_press: app.on_programming_quiz_reset(self)
                     Button:
-                        text: 'Save'
-                        on_press: app.on_programming_quiz_save(self)
+                        text: 'Discuss'
+                        on_press: app.on_programming_quiz_discuss(self)
