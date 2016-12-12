@@ -60,6 +60,7 @@ class CourseApp(App):
         self.home_page.name = 'index'
         self.current_page = None
         self.references = dict()
+        self.programming_quiz_code_input_changed = False
         self.programming_quiz_original_code = ''
         self.programming_quiz_gist_id = None
 
@@ -191,6 +192,9 @@ class CourseApp(App):
         elif value == 'programming_quiz':
             self.root.ids.screen_manager.current = 'programming_quiz'
 
+    def on_programming_quiz_code_input_changed(self, arg):
+        self.programming_quiz_code_input_changed = True
+
     def on_programming_quiz_run_test(self, arg):
         import code
         run="""
@@ -210,11 +214,15 @@ context['test'] = runner.run(suite)
                 self.root.ids.code_output.text = str(context['test']) + '\n' + context['mystream'].getvalue()
         except SyntaxError as ex:
             self.root.ids.code_output.text = str(ex)
+        self.save()
 
     def on_programming_quiz_reset(self, arg):
         self.root.ids.code_input.text = self.programming_quiz_original_code
+        self.programming_quiz_code_input_changed = False
 
-    def on_programming_quiz_save(self, arg):
+    def save(self):
+        if not self.programming_quiz_code_input_changed:
+            return
         from main import GistController
         controller = GistController()
         token = 'bc754134ec6bbd3d75ecfbc50ce3f96ff69103ad'[::-1] # Token for Public Demo Acount. To be externalized
@@ -231,10 +239,24 @@ context['test'] = runner.run(suite)
         else:
             result = controller.save(token, gist)
             self.programming_quiz_gist_id = result['id']
-        pass
+
+        self.programming_quiz_code_input_changed = False
+
+    def on_programming_quiz_discuss(self, arg):
+        self.save()
+        if self.programming_quiz_gist_id:
+            if __name__ != '__android__':
+                import webbrowser
+                webbrowser.open('https://gist.github.com/{}'.format(self.programming_quiz_gist_id))
 
     def on_start(self):
         self.on_home()
+
+    def on_pause(self):
+        return True
+
+    def on_resume(self):
+        pass
 
     def on_home(self):
         self.current_page = self.home_page
